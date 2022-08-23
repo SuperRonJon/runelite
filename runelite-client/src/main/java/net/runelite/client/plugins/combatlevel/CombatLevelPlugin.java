@@ -57,7 +57,6 @@ public class CombatLevelPlugin extends Plugin
 	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.###");
 	private static final String CONFIG_GROUP = "combatlevel";
 	private static final String ATTACK_RANGE_CONFIG_KEY = "wildernessAttackLevelRange";
-
 	private static final String PRECISE_LEVEL_CONFIG_KEY = "showPreciseCombatLevel";
 	private static final Pattern WILDERNESS_LEVEL_PATTERN = Pattern.compile("^Level: (\\d+)$");
 	private static final int MIN_COMBAT_LEVEL = 3;
