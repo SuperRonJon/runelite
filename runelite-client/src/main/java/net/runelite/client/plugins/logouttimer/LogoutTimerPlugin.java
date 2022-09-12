@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Abex
+ * Copyright (c) 2022, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,28 +22,56 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.achievementdiary;
+package net.runelite.client.plugins.logouttimer;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.google.inject.Provides;
+import java.time.Duration;
+import javax.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.VarPlayer;
+import net.runelite.api.Constants;
+import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.plugins.Plugin;
+import net.runelite.client.plugins.PluginDescriptor;
 
-@RequiredArgsConstructor
-@Getter
-public class QuestPointRequirement implements Requirement
+@PluginDescriptor(
+	name = "Logout Timer",
+	description = "Extends the default 5 minute logout timer",
+	enabledByDefault = false
+)
+public class LogoutTimerPlugin extends Plugin
 {
-	private final int qp;
+	@Inject
+	private Client client;
+
+	@Inject
+	private LogoutTimerConfig config;
 
 	@Override
-	public String toString()
+	protected void startUp()
 	{
-		return qp + " " + "Quest points";
+		client.setIdleTimeout((int) Duration.ofMinutes(config.getIdleTimeout()).toMillis() / Constants.CLIENT_TICK_LENGTH);
 	}
 
 	@Override
-	public boolean satisfiesRequirement(Client client)
+	protected void shutDown()
 	{
-		return client.getVarpValue(VarPlayer.QUEST_POINTS) >= qp;
+		client.setIdleTimeout((int) Duration.ofMinutes(5).toMillis() / Constants.CLIENT_TICK_LENGTH);
+	}
+
+	@Provides
+	LogoutTimerConfig provideConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(LogoutTimerConfig.class);
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged configChanged)
+	{
+		if (configChanged.getGroup().equals(LogoutTimerConfig.GROUP))
+		{
+			client.setIdleTimeout((int) Duration.ofMinutes(config.getIdleTimeout()).toMillis() / Constants.CLIENT_TICK_LENGTH);
+		}
 	}
 }
